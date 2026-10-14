@@ -28,7 +28,7 @@ as JSON; a second YAML schema would duplicate the same source of truth.
 
 - `openenv` pins the specification format, for example `0.1.0`.
 - `info.version` is owned by the application author and versions its variables.
-- The initial npm version and Git tag match the specification release.
+- The npm version matches the specification release; new Git tags use `specification-vX.Y.Z`.
 
 The initial implementation supports exactly `0.1.0`. Future implementations may
 support several versions, but must select validation by the declared version.
@@ -57,7 +57,7 @@ The deploy command releases the already prepared version; it does not bump versi
 or commit files. It requires a clean `main` branch, a matching package version, and
 an unused tag on both the local repository and `origin`. It reruns release
 preparation and the packed-consumer check before creating an annotated tag with
-the message `OpenENV vX.Y.Z`. It then pushes only `main` and that tag to `origin`
+the message `OpenENV specification vX.Y.Z`. It then pushes only `main` and that tag to `origin`
 in one atomic operation. A rejected branch update also rejects the tag update;
 force pushes are never used. The remote must support atomic pushes.
 
@@ -66,13 +66,13 @@ before retrying. After resolving the cause and verifying that the tag points to
 the intended `main` commit, the push can be retried manually:
 
 ```sh
-git push --atomic origin refs/heads/main refs/tags/vX.Y.Z
+git push --atomic origin refs/heads/main refs/tags/specification-vX.Y.Z
 ```
 
 The command does not wait for GitHub Actions or publish to npm. Check both Node.js
 CI jobs and the release workflow after pushing.
 
-Pushing a `v*` tag triggers the supplied GitHub release workflow. The workflow
+Pushing a `specification-v*` tag triggers the supplied GitHub release workflow. The workflow
 checks that the tag matches the package and specification, runs validation,
 builds assets, tests the packed consumer, and creates a GitHub release with assets.
 The description comes from the matching version's entry in `CHANGELOG.md`, via
@@ -103,20 +103,20 @@ The reusable `build-artifacts.yml` workflow builds two additional distributions:
   `openenv-website:<commit-sha>`. The image serves Astro's static output through
   unprivileged Nginx on port 8080. CI tests all five routes, the schema, example,
   health endpoint and 404 behavior before exporting it.
-- `openenv-preview-X.Y.Z.vsix`: the VS Code extension, packaged with the pinned
+- `openenv-X.Y.Z.vsix`: the VS Code extension, packaged with the pinned
   `@vscode/vsce` tool and bundled validator. Its version comes from the extension
   manifest, independently of the specification's version.
 
 Download them from the workflow run's **Artifacts** section. Artifacts are retained
 for 14 days. The validation workflow calls this build after its checks on PRs and
-`main`; the release workflow calls it on `v*` tags and waits for successful builds
+`main`; the release workflow calls it on `specification-v*` tags and waits for successful builds
 before its existing specification release step. These two files are workflow
 artifacts, separate from the specification assets attached to a GitHub release.
-No container registry push, site deployment, or Marketplace publication is added.
+These artifact builds do not push images, deploy the website or publish to extension stores. Store publication uses the independent extension workflow below.
 
 ```sh
 docker load --input openenv-website-linux-amd64.tar.gz
-code --install-extension openenv-preview-X.Y.Z.vsix
+code --install-extension openenv-X.Y.Z.vsix
 ```
 
 ## npm publication
@@ -152,3 +152,86 @@ CLI and schema export. Never document an unpublished package as already availabl
 Only the startup/API mode resolves defaults for the application. Running the CLI
 checker does not inject defaults into another process. A schema URL is an editor
 hint, not permission for the linter to download or execute remote content.
+
+## Specification tag migration
+
+New specification releases use `specification-vX.Y.Z`; the `v*` trigger has been
+removed. `npm run deploy X.Y.Z` retains its existing CLI interface and creates
+only the new prefixed tag. CI validates its exact version before artifact builds.
+A local or remote historical `vX.Y.Z` tag blocks another release of that version.
+Do not rename, delete or move historical tags. Prepare a new version instead.
+
+The existing 0.1.0 schema URL keeps `v0.1.0` for compatibility with documents that
+already declare it. Every later schema version uses `specification-vX.Y.Z` in its
+`$id` and `$schema` constant. Update examples and consumer URLs together and run
+`npm run previews:verify` to regenerate the website assets and validator bundles.
+Release titles are `OpenENV Specification X.Y.Z`; notes still come from that
+version's root changelog entry. This workflow does not publish npm packages.
+
+## Independent Open ENV extension releases
+
+Extension versions belong to `extensions/vscode/package.json` and have their own
+`extensions/vscode/CHANGELOG.md`. The extension 0.2.0 supports specification
+0.1.0. To release an already committed extension version from clean `main`:
+
+```sh
+npm run vscode:deploy 0.2.0
+```
+
+The command checks the manifest version and changelog, runs validation, preview
+bundle checks, VSIX packaging and the installed Extension Host tests, then pushes
+`main` plus the annotated `extension-v0.2.0` tag atomically. It does not commit or
+bump versions. On push failure the local tag remains; inspect the remote first,
+then retry the exact reviewed tag without force:
+
+```sh
+git push --atomic origin refs/heads/main refs/tags/extension-v0.2.0
+```
+
+The extension workflow validates the tag and tests the packaged VSIX. It stages
+one immutable VSIX, SHA256SUMS, release notes and a descriptor with the source
+commit in a draft GitHub release. Marketplace and Open VSX jobs download and
+verify these saved assets before publishing through mandatory OIDC. The final
+job confirms both stores and their publication receipts, then publishes the
+GitHub release. Neither `specification-v*` nor historical `v*` tags publish to
+extension stores.
+
+### One-time publisher setup
+
+The publisher owner must complete these account-side steps before pushing the
+first extension release:
+
+1. Create or confirm the Marketplace publisher `it-perspectives` and publishing
+   rights for `it-perspectives.openenv`.
+2. Create an Eclipse account, sign the Open VSX Publisher Agreement, create the
+   `it-perspectives` namespace and claim ownership. A temporary account token may
+   be needed for namespace bootstrap; no token is stored in this repository.
+3. Configure trusted publishing in both stores for GitHub repository
+   `it-perspectives/OpenENV` and workflow `release-extension.yml`. Restrict it to
+   the intended release workflow/ref claims supported by each store. The workflow
+   does not specify a GitHub Environment, so do not require one in the trust policy.
+4. Verify the trust policies allow the `extension-v*` release jobs. Those jobs
+   request `id-token: write`; no `VSCE_PAT` or `OVSX_PAT` secret is configured.
+
+References: [vsce trusted publishing](https://github.com/microsoft/vscode-vsce/blob/main/README.md#trusted-publishing),
+[Open VSX trusted publishing](https://github.com/eclipse-openvsx/openvsx/blob/main/cli/README.md#trusted-publishing),
+and [Open VSX publisher setup](https://github.com/eclipse-openvsx/openvsx/wiki/Publishing-Extensions).
+Account ownership and successful token exchange must be verified by the owner;
+building a VSIX or passing mocked workflow tests does not establish these rights.
+
+### Partial publication and recovery
+
+Stores cannot be published atomically. If one job fails, the other may already
+have published successfully. Fix the account, trust or registry issue and rerun
+failed jobs in the same workflow run. Existing versions are confirmed rather
+than uploaded again. A full rerun also reuses the staged VSIX after verifying its
+commit, identity and checksum; it never replaces the saved package with a rebuild.
+The GitHub release remains draft until both stores confirm the exact version.
+
+If OIDC fails, the job fails without falling back to a stored PAT. If a store is
+still processing the upload after the polling limit, retry after processing
+finishes. If release staging itself fails mid-upload, repair the incomplete draft
+assets from the original build; checksum or commit mismatches stop publication.
+Never overwrite a tag or an existing store version. Ship corrections as a newer
+extension version. Before announcing the release, install from each store in a
+fresh profile and confirm preview, completion and Problems diagnostics.

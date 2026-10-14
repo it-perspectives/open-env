@@ -3,12 +3,12 @@ import { mkdirSync, readFileSync, copyFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
-import { schema, specificationVersion } from '../src/index.js';
+import { specificationVersion } from '../src/index.js';
+import { validateSpecificationRelease } from './release-contract.js';
 import { extractReleaseNotes } from './release-notes.js';
 
 const metadata = JSON.parse(readFileSync('package.json', 'utf8'));
-if (metadata.version !== specificationVersion || schema.properties.openenv.const !== specificationVersion || !schema.$id.includes(`/v${specificationVersion}/`)) throw new Error('Release versions disagree.');
-if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME !== `v${specificationVersion}`) throw new Error('Release tag must match the specification and package version.');
+validateSpecificationRelease({ metadata });
 const releaseNotes = extractReleaseNotes(readFileSync('CHANGELOG.md', 'utf8'), specificationVersion);
 mkdirSync('dist', { recursive: true });
 const run = (command, args) => {

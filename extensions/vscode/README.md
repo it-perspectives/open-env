@@ -1,91 +1,101 @@
-# OpenENV Preview for VS Code
+# Open ENV for VS Code
 
-Local prototype for `openenv.yaml`, `openenv.yml`, and `openenv.json`. Opens a
-read-only contract preview beside the source, similar to Markdown preview.
+Validate, complete and preview environment contracts in `openenv.yaml`,
+`openenv.yml` and `openenv.json`. Requires VS Code 1.100 or newer.
 
-## Run from this repository
+## Editing contracts
 
-Requires Node.js 22+ for the build and VS Code 1.100+ for the extension.
+Open ENV checks supported files automatically, including unsaved changes. It
+underlines errors in the source and reports them in **Problems** with source
+**Open ENV**. No preview panel or YAML extension is required.
 
-From the repository root:
+Checks cover YAML syntax, strict JSON syntax, duplicate keys, unsupported fields,
+missing required fields, types, constraints and the OpenENV semantic rules.
+For example, `requred: true` is underlined as an unsupported field. Valid `x-*`
+metadata is accepted; consumers ignore extensions they do not understand.
+
+Completion suggests fields and fixed values from the bundled specification,
+accounts for existing fields and the selected variable type, and omits literal
+fields for sensitive variables. Hover over a field to read its description and
+requiredness. The initial release supports specification **0.1.0**. Extension
+versions and specification versions are independent.
+
+## Preview
+
+Use **Open ENV: Open Preview to the Side**, the editor title button or the Explorer
+context menu. Shortcut: **Cmd+K, V** on macOS or **Ctrl+K, V** on Windows/Linux.
+The preview shows types, requiredness, defaults, examples, constraints and
+sensitive/deprecated markers. It shares the editor's current validation result
+and updates after a 180 ms debounce.
+
+The extension reads only the selected contract. It does not read `.env`, process
+environment values, execute workspace commands or fetch schemas. All parser,
+linter and editor dependencies are bundled locally. Descriptions are rendered as
+text; the preview disables scripts and local resource access. Desktop and remote
+Node-based Extension Hosts are supported; a browser-only host is not provided.
+Existing YAML/JSON language services can coexist with Open ENV. Configuring the
+same schema in another extension may produce additional diagnostics or suggestions.
+
+## Install and migrate
+
+The extension ID is **`it-perspectives.openenv`**. If you installed the previous
+prototype `it-perspectives.openenv-preview`, uninstall it before installing Open
+ENV. Changing the ID creates a separate extension; the prototype will not update
+automatically to the new one.
+
+For local installation from this repository:
 
 ```sh
 npm ci --ignore-scripts
+npm run vscode:package
+code --install-extension dist/openenv-0.2.0.vsix
+```
+
+## Development and verification
+
+Requires Node.js 22+ for builds. From the repository root:
+
+```sh
 npm run vscode:build
 code extensions/vscode
 ```
 
-Press F5 in the extension directory to start an Extension Development Host.
-In that window open `examples/openenv.yaml` from this repository. Use the preview
-button in the editor title or **OpenENV: Open Preview to the Side** in the Command
-Palette. Shortcut: **Cmd+K, V** on macOS, **Ctrl+K, V** on Windows/Linux.
-The same command appears in the Explorer context menu for supported filenames.
-
-To launch the host directly from the repository root:
+Press F5 to open an Extension Development Host. Alternatively:
 
 ```sh
 code --new-window --extensionDevelopmentPath="$PWD/extensions/vscode" "$PWD/examples/openenv.yaml"
 ```
 
-## Behavior
-
-- Displays title, contract/specification versions, counts, descriptions, types,
-  requiredness, defaults, constraints, examples, enums and deprecated markers.
-- Uses unsaved TextDocument content, updating after a 180 ms debounce.
-- Reuses one panel per document URI; closes listeners and timers with the panel.
-- Displays current parser/linter diagnostics instead of a stale valid preview.
-- Parses JSON strictly, and applies the same YAML restrictions as the CLI.
-- Uses VS Code theme variables, including light and high-contrast themes.
-- Reads only the selected document. Does not read `.env`, process environment,
-  execute workspace commands, fetch remote schemas, or render Markdown/HTML from
-  descriptions. Webview scripts and local resource access are disabled.
-
-The reference schema, parser, linter, and their dependencies are bundled locally
-in `dist/validator.cjs`. No globally installed CLI or published npm package is
-needed. A build must run before launching or packaging the extension.
-
-## Architecture and choice of API
-
-`TextDocument → parseSpec → lintSpec → escaped HTML → WebviewPanel`.
-
-The [Webview API](https://code.visualstudio.com/api/extension-guides/webview)
-also underlies VS Code's built-in Markdown preview. A side panel preserves the
-normal YAML editor, undo/redo and existing language-server completion. A
-`CustomTextEditorProvider` can be added later for **Reopen Editor With**, but is
-not needed for this read-only side preview.
-
-JSON Schema language-server completion remains separate: this prototype does not
-override `yaml.schemas` or replace the YAML extension. It renders semantic lint
-diagnostics in the preview. Problems-panel ranges and click-to-source navigation
-are possible next steps, with YAML/JSON source mapping required for precision.
-
-## Verify and package
-
-From the repository root:
-
 ```sh
-npm run previews:verify
 npm run verify
+npm run previews:verify
+npm run vscode:package
+npm run vscode:test
 ```
 
-Lifecycle tests exercise concurrent opening, panel reuse, unsaved edits, invalid
-contracts, strict JSON, HTML escaping, sensitive literals, and listener cleanup.
-Bundle checks compare browser and extension results with the reference validator.
-These tests do not replace manual checks inside the real VS Code host.
+The host test installs the actual VSIX into an isolated profile, checks automatic
+activation, unsaved edits, diagnostic ranges, completion, hover, theme changes and
+multi-document cleanup. It does not modify your normal extensions or settings.
+`OPENENV_VSCODE_VERSION=1.100.0 npm run vscode:test` tests the minimum supported
+version; the default tests stable. An existing executable can be selected with
+`OPENENV_VSCODE_EXECUTABLE`.
 
-Build a local VSIX from the repository root using the pinned packaging tool:
+## Releases
+
+Prepare and commit the extension version and its changelog, then run:
 
 ```sh
-npm run vscode:package
-code --install-extension dist/openenv-preview-0.1.0.vsix
+npm run vscode:deploy 0.2.0
 ```
 
-The command builds the validator and packages `dist/openenv-preview-X.Y.Z.vsix`,
-with the version from the extension manifest. It includes bundled dependencies
-and needs no globally installed CLI or registry token. GitHub Actions keeps this
-file as a downloadable artifact on PRs, pushes to `main`, and release tags.
+This validates the release and atomically pushes `main` and `extension-v0.2.0`.
+GitHub Actions stages one VSIX with checksums in a draft release and publishes
+that file to Marketplace and Open VSX through OIDC. Both stores must confirm the
+version before the GitHub release becomes public. Retry failed jobs after a
+partial publication; the saved VSIX is reused. No persistent store token or PAT
+fallback is configured.
 
-The prototype is not published to Marketplace. The proposed `it-perspectives`
-publisher ID must be confirmed before publication. Marketplace release should
-also add a PNG icon, verify desktop/remote hosts and light/high-contrast themes,
-and include an Extension Host integration test in CI.
+Store publication requires the publisher/namespace owner to configure GitHub
+trusted publishing first. See the repository's
+[release guide](https://github.com/it-perspectives/OpenENV/blob/main/docs/releases.md)
+for setup and recovery. Local packaging does not prove store publication.

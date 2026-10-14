@@ -33,6 +33,22 @@ jobs:
       - run: npm run format:check --workspace @openenv/website
       - run: npm run site:check
       - run: npm run previews:verify
+  extension-host:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vscode: ["1.100.0", "stable"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run vscode:package
+      - run: xvfb-run -a npm run vscode:test
+        env:
+          OPENENV_VSCODE_VERSION: ${{ matrix.vscode }}
   artifacts:
-    needs: [verify, website]
+    needs: [verify, website, extension-host]
     uses: ./.github/workflows/build-artifacts.yml

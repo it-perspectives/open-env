@@ -177,7 +177,8 @@ const config = checked.values; // Typed values and defaults; treat secrets caref
 
 For JSON, use `parseSpec(text, { format: 'json' })`. Public exports are
 `parseSpec`, `lintSpec`, `checkEnvironment`, `SpecParseError`, `schema`, and
-`specificationVersion`. Results contain `valid` and `diagnostics`.
+`specificationVersion`. Results contain `valid` and `diagnostics`. Schema diagnostics additionally expose
+`keyword` and, where applicable, `property` for editor source mapping.
 `checkEnvironment` additionally returns `values` on success; CLI reports omit them.
 
 The release schema can be vendored for offline use, including by implementations
@@ -186,7 +187,7 @@ in other languages.
 ## Editor integration
 
 A local [Astro documentation website](website/README.md) and
-[VS Code preview prototype](extensions/vscode/README.md) are available in this
+[Open ENV VS Code extension](extensions/vscode/README.md) are available in this
 checkout. The preview opens `openenv.yaml`, `openenv.yml`, or `openenv.json` beside
 the source and refreshes on unsaved edits using the reference parser and linter.
 It does not read environment values and is not published to Marketplace.

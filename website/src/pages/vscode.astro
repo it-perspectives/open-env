@@ -7,14 +7,14 @@ import { intros, previewFeatures, notes } from '../data/content';
 import { site } from '../data/site';
 ---
 
-<ConsoleLayout title="VS Code Preview">
+<ConsoleLayout title="Open ENV for VS Code">
   <PageIntro {...intros.vscode}>
     <span slot="actions" class="vscode-shortcut">
       ⌘ K → V / CTRL K → V
     </span>
   </PageIntro>
   <LivePreview />
-  <Section label="EXTENSION DESIGN" title="ПОВЕДЕНИЕ PREVIEW">
+  <Section label="EXTENSION DESIGN" title="ВОЗМОЖНОСТИ OPEN ENV">
     <div class="feature-lines">
       {previewFeatures.map((feature) => (
         <div>
@@ -24,7 +24,7 @@ import { site } from '../data/site';
         </div>
       ))}
     </div>
-    <div class="notice">{notes.previewPrototype}</div>
+    <div class="notice">{notes.extensionDistribution}</div>
   </Section>
   <Section label="DEVELOPER NOTES" title="АРХИТЕКТУРА РАСШИРЕНИЯ">
     <p class="section-description">{notes.previewArchitecture}</p>

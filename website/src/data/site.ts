@@ -16,7 +16,7 @@ export const navigation = [
 ];
 
 export const tools = [
-  { href: '/vscode/', icon: '⊞', label: 'VS Code Preview', badge: 'LAB' },
+  { href: '/vscode/', icon: '⊞', label: 'Open ENV · VS Code', badge: '0.2' },
   { href: '/SPEC.md', icon: '↗', label: 'Спецификация', external: true },
   { href: '/openenv-0.1.0.schema.json', icon: '↓', label: 'JSON Schema', download: true },
 ];

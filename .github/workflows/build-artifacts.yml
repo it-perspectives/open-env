@@ -55,8 +55,8 @@ jobs:
       - name: Store VSIX artifact
         uses: actions/upload-artifact@v7
         with:
-          name: openenv-preview-${{ github.sha }}
-          path: dist/openenv-preview-*.vsix
+          name: openenv-${{ github.sha }}
+          path: dist/openenv-*.vsix
           if-no-files-found: error
           compression-level: 0
           retention-days: 14

@@ -46,7 +46,9 @@
     "verify": "npm test && npm run lint",
     "release:prepare": "npm run verify && node scripts/prepare-release.js",
     "deploy": "node scripts/deploy.js",
-    "prepack": "npm run verify"
+    "prepack": "npm run verify",
+    "vscode:deploy": "node scripts/deploy-vscode.js",
+    "vscode:test": "node scripts/run-vscode-tests.js"
   },
   "dependencies": {
     "ajv": "8.20.0",
@@ -54,7 +56,15 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
+    "@vscode/test-electron": "2.5.2",
     "@vscode/vsce": "4.0.0",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "jsonc-parser": "3.3.1",
+    "ovsx": "1.2.0"
+  },
+  "overrides": {
+    "ovsx": {
+      "@vscode/vsce": "$@vscode/vsce"
+    }
   }
 }

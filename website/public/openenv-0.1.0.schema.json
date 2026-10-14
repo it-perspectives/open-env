@@ -14,10 +14,12 @@
   },
   "properties": {
     "$schema": {
-      "const": "https://raw.githubusercontent.com/it-perspectives/OpenENV/v0.1.0/schemas/openenv-0.1.0.schema.json"
+      "const": "https://raw.githubusercontent.com/it-perspectives/OpenENV/v0.1.0/schemas/openenv-0.1.0.schema.json",
+      "description": "Versioned editor schema URL. The validator never downloads remote schemas."
     },
     "openenv": {
-      "const": "0.1.0"
+      "const": "0.1.0",
+      "description": "Supported OpenENV specification version."
     },
     "info": {
       "type": "object",
@@ -32,16 +34,20 @@
       "properties": {
         "title": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Non-empty application title."
         },
         "version": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Application contract version, independent of the specification version."
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Human-readable description."
         }
-      }
+      },
+      "description": "Application contract metadata."
     },
     "variables": {
       "type": "object",
@@ -50,16 +56,28 @@
       },
       "additionalProperties": {
         "$ref": "#/$defs/variable"
-      }
+      },
+      "description": "Map from environment variable names to their definitions."
     }
   },
   "$defs": {
     "value": {
       "anyOf": [
-        { "type": "string" },
-        { "type": "number" },
-        { "type": "boolean" },
-        { "type": "array", "items": { "type": "string" } }
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       ]
     },
     "variable": {
@@ -75,7 +93,8 @@
       "properties": {
         "description": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Human-readable description."
         },
         "type": {
           "enum": [
@@ -84,33 +103,42 @@
             "number",
             "boolean",
             "array"
-          ]
+          ],
+          "description": "Value type used to decode the environment string."
         },
         "delimiter": {
           "description": "Required for array variables: a single space or comma.",
-          "enum": [" ", ","]
+          "enum": [
+            " ",
+            ","
+          ]
         },
         "required": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Whether the environment variable must be present when no default exists."
         },
         "sensitive": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Marks a secret. Defaults, examples and enums are forbidden."
         },
         "deprecated": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Marks a variable that consumers should stop using."
         },
         "default": {
-          "$ref": "#/$defs/value"
+          "$ref": "#/$defs/value",
+          "description": "Value used when the environment variable is absent."
         },
         "examples": {
           "type": "array",
           "minItems": 1,
           "items": {
             "$ref": "#/$defs/value"
-          }
+          },
+          "description": "Non-empty list of values satisfying the variable constraints."
         },
         "enum": {
           "type": "array",
@@ -118,7 +146,8 @@
           "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/value"
-          }
+          },
+          "description": "Allowed complete values; each must satisfy the variable constraints."
         },
         "format": {
           "enum": [
@@ -128,37 +157,53 @@
             "hostname",
             "ipv4",
             "ipv6"
-          ]
+          ],
+          "description": "Standard string format."
         },
         "pattern": {
-          "type": "string"
+          "type": "string",
+          "description": "Regular expression applied to string values."
         },
         "minLength": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "Minimum string length, independent of requiredness."
         },
         "maxLength": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "Maximum string length."
         },
         "minimum": {
-          "type": "number"
+          "type": "number",
+          "description": "Minimum numeric value."
         },
         "maximum": {
-          "type": "number"
+          "type": "number",
+          "description": "Maximum numeric value."
         }
       },
       "allOf": [
         {
           "if": {
-            "properties": { "type": { "const": "array" } }
+            "properties": {
+              "type": {
+                "const": "array"
+              }
+            }
           },
           "then": {
-            "properties": { "delimiter": {} },
-            "required": ["delimiter"]
+            "properties": {
+              "delimiter": {}
+            },
+            "required": [
+              "delimiter"
+            ]
           },
           "else": {
-            "properties": { "delimiter": false }
+            "properties": {
+              "delimiter": false
+            }
           }
         },
         {

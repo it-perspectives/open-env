@@ -46,10 +46,10 @@ export const intros = {
       'Спецификация независима от языка приложения. Reference CLI и библиотека работают на Node.js: используйте их в CI или при запуске сервиса.',
   },
   vscode: {
-    label: 'EDITOR INTEGRATION / LOCAL PROTOTYPE',
-    title: 'YAML слева. Контракт справа.',
+    label: 'OPEN ENV / VS CODE EXTENSION',
+    title: 'Open ENV: проверка и подсказки.',
     description:
-      'Preview для openenv.yaml по аналогии с Markdown: читаемое представление переменных и диагностика рядом с исходником. Ниже — интерактивная браузерная демонстрация.',
+      'Валидация YAML и JSON, подсветка неизвестных полей, автодополнение и preview контракта. Ниже — браузерная демонстрация проверки и превью.',
   },
 };
 
@@ -165,16 +165,22 @@ export const previewFeatures = [
     label: '01 / OPEN BESIDE',
     title: 'Как Markdown',
     description:
-      'Команда OpenENV: Open Preview to the Side, кнопка в заголовке редактора и shortcut для openenv.yaml, .yml и .json.',
+      'Команда Open ENV: Open Preview to the Side, кнопка в заголовке редактора и shortcut для openenv.yaml, .yml и .json.',
   },
   {
     label: '02 / LIVE UPDATE',
     title: 'Без сохранения файла',
     description:
-      'Изменения TextDocument обновляют preview с небольшой задержкой. Парсер и linter — те же, что у CLI.',
+      'Несохранённые изменения обновляют подчёркивания, Problems и preview. Неизвестные поля проверяются без открытия панели.',
   },
   {
-    label: '03 / CONTRACT ONLY',
+    label: '03 / COMPLETION',
+    title: 'Допустимые поля и значения',
+    description:
+      'Подсказки учитывают тип переменной, уже введённые поля и sensitive. Наведение показывает описание поля и обязательность.',
+  },
+  {
+    label: '04 / CONTRACT ONLY',
     title: 'Без значений окружения',
     description:
       'Таблица типов, описаний и правил. Расширение не читает .env и не запускает команды из workspace.',
@@ -188,8 +194,8 @@ export const notes = {
     'CLI возвращает диагностику и код завершения: 0 — успех, 1 — ошибка контракта или окружения, 2 — ошибка файла или использования. Значения окружения в отчёт не попадают.',
   runtimeIntegration:
     'После публикации пакета библиотеку можно установить как production dependency. Приложение выбирает источник значений и решает, как обработать ошибку.',
-  previewPrototype:
-    'Прототип предназначен для локального запуска Extension Development Host. Публикация в VS Code Marketplace — отдельный шаг.',
+  extensionDistribution:
+    'Расширение Open ENV 0.2.0 можно собрать и установить из VSIX. Пайплайн публикации в Marketplace и Open VSX подготовлен; доступность в магазинах зависит от выполнения релиза.',
   previewArchitecture:
-    'TextDocument → parseSpec → lintSpec → модель preview → WebviewPanel. JSON Schema отвечает за структуру; linter добавляет семантические проверки. Webview отображает валидный контракт или диагностику текущей редакции.',
+    'Текущий TextDocument проходит parseSpec и lintSpec. Общий результат используется в DiagnosticCollection и WebviewPanel; встроенная схема задаёт подсказки и описания полей.',
 };

@@ -1,43 +1,74 @@
 {
-  "name": "openenv-preview",
-  "displayName": "OpenENV Preview",
-  "description": "Live environment contract preview for openenv.yaml, openenv.yml and openenv.json.",
-  "version": "0.1.0",
+  "name": "openenv",
+  "displayName": "Open ENV",
+  "description": "Validation, completion and live preview for OpenENV YAML and JSON environment contracts.",
+  "version": "0.2.0",
   "publisher": "it-perspectives",
   "license": "MIT",
-  "engines": { "vscode": "^1.100.0" },
-  "categories": ["Other"],
-  "main": "./src/extension.cjs",
-  "repository": { "type": "git", "url": "https://github.com/it-perspectives/OpenENV" },
-  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "main": "./dist/extension.cjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/it-perspectives/OpenENV"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onLanguage:yaml",
+    "onLanguage:json"
+  ],
   "capabilities": {
-    "untrustedWorkspaces": { "supported": true },
-    "virtualWorkspaces": { "supported": true }
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
   },
   "contributes": {
-    "commands": [{
-      "command": "openenv.openPreviewToSide",
-      "title": "Open Preview to the Side",
-      "category": "OpenENV",
-      "icon": "$(open-preview)"
-    }],
+    "commands": [
+      {
+        "command": "openenv.openPreviewToSide",
+        "title": "Open Preview to the Side",
+        "category": "Open ENV",
+        "icon": "$(open-preview)"
+      }
+    ],
     "menus": {
-      "editor/title": [{
-        "command": "openenv.openPreviewToSide",
-        "when": "resourceFilename =~ /^openenv\\.(yaml|yml|json)$/",
-        "group": "navigation"
-      }],
-      "explorer/context": [{
-        "command": "openenv.openPreviewToSide",
-        "when": "resourceFilename =~ /^openenv\\.(yaml|yml|json)$/",
-        "group": "navigation"
-      }]
+      "editor/title": [
+        {
+          "command": "openenv.openPreviewToSide",
+          "when": "resourceFilename =~ /^openenv\\.(yaml|yml|json)$/",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "openenv.openPreviewToSide",
+          "when": "resourceFilename =~ /^openenv\\.(yaml|yml|json)$/",
+          "group": "navigation"
+        }
+      ]
     },
-    "keybindings": [{
-      "command": "openenv.openPreviewToSide",
-      "key": "ctrl+k v",
-      "mac": "cmd+k v",
-      "when": "editorTextFocus && resourceFilename =~ /^openenv\\.(yaml|yml|json)$/"
-    }]
-  }
+    "keybindings": [
+      {
+        "command": "openenv.openPreviewToSide",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorTextFocus && resourceFilename =~ /^openenv\\.(yaml|yml|json)$/"
+      }
+    ]
+  },
+  "icon": "icon.png",
+  "keywords": [
+    "openenv",
+    "environment",
+    "yaml",
+    "validation"
+  ]
 }

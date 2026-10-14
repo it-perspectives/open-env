@@ -10,6 +10,6 @@ mkdirSync(output, { recursive: true });
 
 await createVSIX({
   cwd: fileURLToPath(extension),
-  packagePath: fileURLToPath(new URL(`openenv-preview-${manifest.version}.vsix`, output)),
+  packagePath: fileURLToPath(new URL(`openenv-${manifest.version}.vsix`, output)),
   dependencies: false,
 });

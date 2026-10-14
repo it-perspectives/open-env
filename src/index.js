@@ -79,7 +79,14 @@ function valueSchema(variable, includeEnum = true) {
 /** Validate the document shape and cross-field semantics without changing it. */
 export function lintSpec(spec) {
   if (!validateSpec(spec)) {
-    return result(validateSpec.errors.map((error) => diagnostic('SCHEMA', error.instancePath || '/', error.message)));
+    return result(validateSpec.errors.map((error) => {
+      const property = error.params.additionalProperty ?? error.params.missingProperty ?? error.params.propertyName ?? error.propertyName;
+      const message = error.keyword === 'additionalProperties'
+        ? `Unknown field ${JSON.stringify(property)}. This field is not supported by OpenENV ${specificationVersion}.`
+        : error.message;
+      return { ...diagnostic('SCHEMA', error.instancePath || '/', message), keyword: error.keyword,
+        ...(property === undefined ? {} : { property }) };
+    }));
   }
   const diagnostics = [];
   for (const [name, variable] of Object.entries(spec.variables)) {

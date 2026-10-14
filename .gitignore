@@ -5,3 +5,5 @@ dist/
 .env.*
 website/.astro/
 extensions/vscode/*.vsix
+
+.vscode-test/
