@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 delete process.env.ELECTRON_RUN_AS_NODE;
 const temporary = mkdtempSync(join(tmpdir(), 'openenv-host-'));
 try {
-  let executable = process.env.OPENENV_VSCODE_EXECUTABLE || await downloadAndUnzipVSCode({ version: process.env.OPENENV_VSCODE_VERSION || 'stable', cachePath: resolve('.vscode-test') });
+  let executable = process.env.OPENENV_VSCODE_EXECUTABLE || await downloadAndUnzipVSCode({ version: process.env.OPEN_TOOLING_VSCODE_VERSION || process.env.OPENENV_VSCODE_VERSION || 'stable', cachePath: resolve('.vscode-test') });
   // Recent macOS releases renamed the executable from Electron to Code.
   if (process.platform === 'darwin' && !existsSync(executable) && existsSync(join(dirname(executable), 'Code'))) executable = join(dirname(executable), 'Code');
   const extensions = join(temporary, 'extensions');
@@ -21,7 +21,8 @@ try {
   writeFileSync(join(workspace, 'openenv.yaml'), readFileSync('examples/openenv.yaml'));
   const manifest = JSON.parse(readFileSync('extensions/vscode/package.json', 'utf8'));
   const [cli, ...args] = resolveCliArgsFromVSCodeExecutablePath(executable);
-  const install = spawnSync(cli, [...args, '--install-extension', resolve(`dist/openenv-${manifest.version}.vsix`), '--extensions-dir', extensions, '--user-data-dir', user], { encoding: 'utf8' });
+  const vsix = process.env.OPEN_TOOLING_VSIX || resolve(`dist/openenv-${manifest.version}.vsix`);
+  const install = spawnSync(cli, [...args, '--install-extension', vsix, '--extensions-dir', extensions, '--user-data-dir', user], { encoding: 'utf8' });
   if (install.status !== 0) throw new Error(`VSIX installation failed: ${install.stderr || install.stdout}`);
   await runTests({ vscodeExecutablePath: executable, extensionDevelopmentPath: driver,
     extensionTestsPath: resolve('extensions/vscode/integration/host.cjs'),

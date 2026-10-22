@@ -3,66 +3,14 @@ on:
   push:
     tags: ['extension-v*']
 permissions:
-  contents: read
-concurrency:
-  group: release-extension-${{ github.ref }}
-  cancel-in-progress: false
+  contents: write
+  id-token: write
+  packages: write
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: node scripts/vscode-release.js check
-      - run: npm run verify
-      - run: npm run previews:verify
-      - run: npm run vscode:package
-      - run: xvfb-run -a npm run vscode:test
-        env:
-          OPENENV_VSCODE_VERSION: '1.100.0'
-      - run: node scripts/vscode-release.js stage
-        env:
-          GH_TOKEN: ${{ github.token }}
-  publish:
-    needs: prepare
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        store: [marketplace, openvsx]
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: node scripts/vscode-release.js publish "${{ matrix.store }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
-  finalize:
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: node scripts/vscode-release.js finalize
-        env:
-          GH_TOKEN: ${{ github.token }}
+  release:
+    # Keep this caller filename for the existing Marketplace/Open VSX trust policies.
+    # open-tooling v0.1.0
+    uses: it-perspectives/open-tooling/.github/workflows/release.yml@0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+    with:
+      tooling-ref: 0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+      require-complete: true

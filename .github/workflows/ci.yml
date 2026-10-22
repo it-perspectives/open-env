@@ -3,52 +3,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [22, 24]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run release:prepare
-      - run: node scripts/smoke-package.js
-  website:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run format:check --workspace @openenv/website
-      - run: npm run site:check
-      - run: npm run previews:verify
-  extension-host:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        vscode: ["1.100.0", "stable"]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run vscode:package
-      - run: xvfb-run -a npm run vscode:test
-        env:
-          OPENENV_VSCODE_VERSION: ${{ matrix.vscode }}
-  artifacts:
-    needs: [verify, website, extension-host]
-    uses: ./.github/workflows/build-artifacts.yml
+    # open-tooling v0.1.0
+    uses: it-perspectives/open-tooling/.github/workflows/verify.yml@0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+    with:
+      tooling-ref: 0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+      require-complete: true

@@ -2,7 +2,9 @@
 
 Local Astro 7 website generating five static HTML pages. Graphite panels, cyan
 controls, orange corner marks and the existing logo preserve the console design.
-No hosting or publication is configured. Requires Node.js 22.12+ or 24.
+No hosting deployment is configured. Builds support Node.js 22.12+, 24 and 26.
+Shared open-tooling CI packages the static site and its tested Docker image in the
+`open-products` bundle; website versions are tracked in `package.json` and `CHANGELOG.md`.
 
 ## Development
 

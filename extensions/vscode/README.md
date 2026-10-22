@@ -53,7 +53,7 @@ code --install-extension dist/openenv-0.2.0.vsix
 
 ## Development and verification
 
-Requires Node.js 22+ for builds. From the repository root:
+Supports Node.js 22, 24 and 26 for builds. From the repository root:
 
 ```sh
 npm run vscode:build
@@ -89,11 +89,12 @@ npm run vscode:deploy 0.2.0
 ```
 
 This validates the release and atomically pushes `main` and `extension-v0.2.0`.
-GitHub Actions stages one VSIX with checksums in a draft release and publishes
-that file to Marketplace and Open VSX through OIDC. Both stores must confirm the
-version before the GitHub release becomes public. Retry failed jobs after a
-partial publication; the saved VSIX is reused. No persistent store token or PAT
-fallback is configured.
+The pinned open-tooling workflow builds and tests the VSIX, saves it in the
+`open-products` bundle with its inventory/checksums, and publishes that same file
+to Marketplace and Open VSX through OIDC. Both publication jobs must succeed before
+the GitHub release becomes public. After partial publication, rerun only failed
+jobs using the saved artifacts; tooling v0.1.0 delegates duplicate-version handling
+to the store CLIs. No persistent store token or PAT fallback is configured.
 
 Store publication requires the publisher/namespace owner to configure GitHub
 trusted publishing first. See the repository's

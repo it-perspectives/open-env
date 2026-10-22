@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 import { schema } from '../src/index.js';
 import { validateSpecificationRelease, schemaUrlForVersion } from '../scripts/release-contract.js';
 const valid = { metadata: { version: '0.1.0' }, env: { GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: 'specification-v0.1.0' } };
@@ -12,10 +13,26 @@ test('new specification versions require prefixed immutable schema URLs', () => 
   next.$id = next.$id.replace('specification-v', 'v');
   assert.throws(() => validateSpecificationRelease({ metadata: { version: '0.1.1' }, formatVersion: '0.1.1', documentSchema: next, env: {} }), /URLs/);
 });
-test('pipelines have disjoint tag triggers and validation before builds', () => {
-  const spec = readFileSync('.github/workflows/release.yml', 'utf8');
-  const extension = readFileSync('.github/workflows/release-extension.yml', 'utf8');
-  assert.match(spec, /tags: \['specification-v\*'\]/); assert.match(spec, /needs: validate-tag/);
-  assert.match(extension, /tags: \['extension-v\*'\]/); assert.match(extension, /id-token: write/);
-  assert.doesNotMatch(spec + extension, /tags: \['v\*'\]/);
+test('CI and disjoint release callers pin the same complete tooling contract', () => {
+  const read = name => parse(readFileSync(`.github/workflows/${name}.yml`, 'utf8'));
+  const ci = read('ci');
+  const spec = read('release');
+  const extension = read('release-extension');
+  const pin = '0ac78fd5a1bc8c567d453e36e8e13224df62d74d';
+  assert.deepEqual(spec.on.push.tags, ['specification-v*', 'website-v*']);
+  assert.deepEqual(extension.on.push.tags, ['extension-v*']);
+  assert.equal(ci.permissions.contents, 'read');
+  for (const [workflow, job, called] of [[ci, 'verify', 'verify'], [spec, 'release', 'release'], [extension, 'release', 'release']]) {
+    assert.deepEqual(Object.keys(workflow.jobs), [job]);
+    assert.equal(workflow.jobs[job].uses, `it-perspectives/open-tooling/.github/workflows/${called}.yml@${pin}`);
+    assert.deepEqual(workflow.jobs[job].with, { 'tooling-ref': pin, 'require-complete': true });
+  }
+  for (const workflow of [spec, extension]) {
+    assert.equal(workflow.permissions.contents, 'write');
+    assert.equal(workflow.permissions['id-token'], 'write');
+    assert.equal(workflow.permissions.packages, 'write');
+  }
+  const manifest = JSON.parse(readFileSync('.open-project.json', 'utf8'));
+  assert.equal(manifest.products.website.verify, 'tooling:verify-site');
+  assert.deepEqual(manifest.publishing, { npm: false, marketplace: true, openVSX: true });
 });

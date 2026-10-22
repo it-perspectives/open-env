@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/it-perspectives/open-tooling/v0.1.0/schemas/open-project.schema.json",
+  "openProject": 1,
+  "id": "openenv",
+  "title": "OpenENV",
+  "repository": "it-perspectives/OpenENV",
+  "specification": {
+    "version": "0.1.0",
+    "key": "openenv",
+    "schema": "schemas/openenv-0.1.0.schema.json",
+    "legacySchemaTag": "v0.1.0",
+    "examples": { "json": "examples/openenv.json", "yaml": "examples/openenv.yaml" }
+  },
+  "source": [".open-project.json", ".github", ".dockerignore", ".gitignore", "README.md", "SPEC.md", "CHANGELOG.md", "LICENSE", "package.json", "package-lock.json", "schemas", "examples", "docs", "src", "bin", "scripts", "test", "extensions", "website"],
+  "checks": { "verify": "verify" },
+  "products": {
+    "npm": { "name": "@it-perspectives/openenv", "verify": "tooling:smoke-npm" },
+    "vscode": {
+      "enabled": true,
+      "packageJson": "extensions/vscode/package.json",
+      "build": "vscode:package",
+      "verify": "vscode:test",
+      "vsix": "dist/openenv-0.2.0.vsix",
+      "minimumVersion": "1.100.0"
+    },
+    "website": {
+      "enabled": true,
+      "packageJson": "website/package.json",
+      "build": "site:build",
+      "verify": "tooling:verify-site",
+      "directory": "website/dist",
+      "routes": ["/", "/contract/", "/types/", "/quickstart/", "/vscode/"],
+      "assets": [
+        { "source": "schemas/openenv-0.1.0.schema.json", "path": "openenv-0.1.0.schema.json" },
+        { "source": "examples/openenv.json", "path": "openenv.json" },
+        { "source": "examples/openenv.yaml", "path": "openenv.yaml" }
+      ],
+      "image": { "dockerfile": "website/Dockerfile", "verify": "tooling:smoke-image" }
+    }
+  },
+  "publishing": { "npm": false, "marketplace": true, "openVSX": true }
+}

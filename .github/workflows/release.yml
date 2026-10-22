@@ -1,37 +1,15 @@
 name: Release OpenENV
 on:
   push:
-    tags: ['specification-v*']
+    tags: ['specification-v*', 'website-v*']
 permissions:
   contents: write
+  id-token: write
+  packages: write
 jobs:
-  validate-tag:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - run: npm ci --ignore-scripts
-      - run: node scripts/release-contract.js
-  artifacts:
-    needs: validate-tag
-    uses: ./.github/workflows/build-artifacts.yml
   release:
-    needs: artifacts
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run release:prepare
-      - run: node scripts/smoke-package.js
-      - name: Publish GitHub release assets
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag
-          --title "OpenENV Specification ${GITHUB_REF_NAME#specification-v}" --notes-file dist/release-notes.md
+    # open-tooling v0.1.0; extension tags use release-extension.yml for publisher identity.
+    uses: it-perspectives/open-tooling/.github/workflows/release.yml@0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+    with:
+      tooling-ref: 0ac78fd5a1bc8c567d453e36e8e13224df62d74d
+      require-complete: true

@@ -8,7 +8,7 @@
     "website"
   ],
   "engines": {
-    "node": ">=22"
+    "node": "^22.0.0 || ^24.0.0 || ^26.0.0"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
     "site:build": "npm run build --workspace @openenv/website",
     "site:dev": "npm run dev --workspace @openenv/website",
     "site:check": "npm run check --workspace @openenv/website",
@@ -48,7 +48,10 @@
     "deploy": "node scripts/deploy.js",
     "prepack": "npm run verify",
     "vscode:deploy": "node scripts/deploy-vscode.js",
-    "vscode:test": "node scripts/run-vscode-tests.js"
+    "vscode:test": "node scripts/run-vscode-tests.js",
+    "tooling:smoke-npm": "node scripts/smoke-package.js",
+    "tooling:smoke-image": "node scripts/smoke-website-image.js",
+    "tooling:verify-site": "npm run format:check --workspace @openenv/website && npm run site:check && node scripts/verify-previews.js"
   },
   "dependencies": {
     "ajv": "8.20.0",

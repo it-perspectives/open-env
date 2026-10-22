@@ -5,8 +5,8 @@ import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
-const tarball = resolve('dist', `it-perspectives-openenv-${version}.tgz`);
-assert.ok(readdirSync('dist').includes(`it-perspectives-openenv-${version}.tgz`));
+const tarball = process.env.OPEN_TOOLING_NPM_TARBALL || resolve('dist', `it-perspectives-openenv-${version}.tgz`);
+if (!process.env.OPEN_TOOLING_NPM_TARBALL) assert.ok(readdirSync('dist').includes(`it-perspectives-openenv-${version}.tgz`));
 const directory = mkdtempSync(join(tmpdir(), 'openenv-consumer-'));
 writeFileSync(join(directory, 'package.json'), '{"private":true,"type":"module"}\n');
 const run = (command, args) => {

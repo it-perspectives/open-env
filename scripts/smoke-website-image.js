@@ -3,7 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 
-const [image, ...extra] = process.argv.slice(2);
+const [argument, ...extra] = process.argv.slice(2);
+const image = argument || process.env.OPEN_TOOLING_IMAGE;
 const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 if (!image || extra.length || image.startsWith('-')) {
   throw new Error('Usage: node scripts/smoke-website-image.js IMAGE');

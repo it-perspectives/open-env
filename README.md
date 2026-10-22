@@ -29,7 +29,7 @@ implement those rules for particular platforms.
 | ------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [Specification](SPEC.md)                         | Defines fields, constraints, decoding, and validation rules.               | Independent of application language and framework.                      |
 | [JSON Schema](schemas/openenv-0.1.0.schema.json) | Supports document validation and editor completion for both JSON and YAML. | A compatible JSON Schema Draft 2020-12 validator or editor integration. |
-| `@it-perspectives/openenv`                       | Reference JavaScript implementation and CLI.                               | Node.js 22 or newer; no application framework required.                 |
+| `@it-perspectives/openenv`                       | Reference JavaScript implementation and CLI.                               | Node.js 22, 24 or 26; no application framework required.                 |
 
 An application on any stack can keep an OpenENV contract and use the CLI in CI
 without using Node.js in the application itself. In a Node.js application, the
@@ -113,7 +113,7 @@ Editors obtain their schema through a separate association described below.
 
 ## Use from this checkout
 
-Requires Node.js 22 or newer and npm. Node.js 22 and 24 are configured in CI.
+Supports Node.js 22, 24 and 26 with npm. CI uses the pinned open-tooling v0.1.0 workflows on all three majors.
 
 ```sh
 npm ci --ignore-scripts
@@ -244,8 +244,12 @@ npm run deploy 0.1.0
 ```
 
 This checks the prepared version, builds and tests the release assets, and pushes
-`main` and an annotated tag to `origin`. GitHub Actions publishes the GitHub release;
-npm registry publication is a separate maintainer step.
+`main` and an annotated tag to `origin`. Shared open-tooling CI saves the complete
+verified bundle as `open-products` and publishes it to GitHub Releases on a matching
+component tag. The manifest requires every product; extension tags publish the
+tested VSIX to both stores through OIDC. npm registry publication is a separate
+maintainer step. See [.open-project.json](.open-project.json) and the
+[release guide](docs/releases.md) for the pinned workflows and artifact layout.
 
 ## Contributors
 
